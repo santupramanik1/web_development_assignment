@@ -84,6 +84,25 @@ export default function Home() {
     setIsFormOpen(true);
   };
 
+  // Handle selected image file upload
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setFormError("Image size must be less than 5MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string);
+      };
+      reader.onerror = () => {
+        setFormError("Failed to read image file.");
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Form Submit
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -431,15 +450,34 @@ export default function Home() {
 
                   <div>
                     <label className="block text-xs font-bold uppercase tracking-wider text-zinc-500 dark:text-zinc-400 mb-1">
-                      Image URL (Optional)
+                      Upload Image (Optional)
                     </label>
-                    <input
-                      type="url"
-                      value={image}
-                      onChange={(e) => setImage(e.target.value)}
-                      placeholder="https://example.com/image.jpg"
-                      className="w-full rounded-xl border border-zinc-200 bg-zinc-50 px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-950 dark:focus:border-indigo-500 dark:focus:bg-zinc-900 transition-all"
-                    />
+                    <div className="space-y-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="w-full text-sm text-zinc-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer"
+                      />
+                      {image && (
+                        <div className="relative inline-block mt-2">
+                          <img
+                            src={image}
+                            alt="Preview"
+                            className="h-20 w-32 object-cover rounded-xl border border-zinc-200 dark:border-zinc-800 shadow"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setImage("")}
+                            className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition-colors"
+                          >
+                            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
 
