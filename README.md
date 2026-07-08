@@ -1,36 +1,52 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Web Development Assignment - Notice Board
 
-## Getting Started
+A dynamic, premium Notice Board web application built using Next.js, Prisma, PostgreSQL (Supabase), Tailwind CSS, and Supabase S3-compatible Storage for image uploads.
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## How to Run the Project Locally
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Follow these steps to set up and run the project on your machine:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Clone the Repository**:
+   ```bash
+   git clone https://github.com/santupramanik1/web_development_assignment.git
+   cd web_development_assignment
+   ```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
 
-## Learn More
+3. **Configure Environment Variables**:
+   - Copy the sample environment file to `.env`:
+     ```bash
+     cp .env.example .env
+     ```
+   - Open `.env` and fill in the required variables (your Supabase PostgreSQL URL and S3 connection credentials).
 
-To learn more about Next.js, take a look at the following resources:
+4. **Prisma Setup**:
+   - Generate the Prisma client:
+     ```bash
+     npx prisma generate
+     ```
+   - Push the schema to the database:
+     ```bash
+     npx prisma db push
+     ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+5. **Run the Development Server**:
+   ```bash
+   npm run dev
+   ```
+   - Open [http://localhost:3000](http://localhost:3000) in your browser to view the application.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## AI Usage Summary
+
+AI was used to:
+- Write the S3 file upload API endpoint (`/api/upload`) using `@aws-sdk/client-s3`.
+- Integrate the file upload flow on the notice submission form.
