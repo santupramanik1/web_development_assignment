@@ -27,6 +27,7 @@ export default function Home() {
   const [priority, setPriority] = useState<"Normal" | "Urgent">("Normal");
   const [publishDate, setPublishDate] = useState("");
   const [image, setImage] = useState("");
+  const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [formError, setFormError] = useState("");
   const [formSubmitting, setFormSubmitting] = useState(false);
 
@@ -65,6 +66,7 @@ export default function Home() {
     const today = new Date().toISOString().split("T")[0];
     setPublishDate(today);
     setImage("");
+    setSelectedImageFile(null);
     setFormError("");
     setIsFormOpen(true);
   };
@@ -80,6 +82,7 @@ export default function Home() {
     const formattedDate = new Date(notice.publishDate).toISOString().split("T")[0];
     setPublishDate(formattedDate);
     setImage(notice.image || "");
+    setSelectedImageFile(null);
     setFormError("");
     setIsFormOpen(true);
   };
@@ -92,6 +95,7 @@ export default function Home() {
         setFormError("Image size must be less than 5MB.");
         return;
       }
+      setSelectedImageFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setImage(reader.result as string);
@@ -102,6 +106,15 @@ export default function Home() {
       reader.readAsDataURL(file);
     }
   };
+
+  // Helper to convert File to base64 string
+  const toBase64 = (file: File): Promise<string> =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (error) => reject(error);
+    });
 
   // Form Submit
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -115,6 +128,30 @@ export default function Home() {
 
     setFormSubmitting(true);
     try {
+      let imageUrl = image;
+
+      if (selectedImageFile) {
+        // Upload to S3 proxy endpoint
+        const base64Data = await toBase64(selectedImageFile);
+        const uploadRes = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            file: base64Data,
+            filename: selectedImageFile.name,
+            filetype: selectedImageFile.type,
+          }),
+        });
+
+        if (!uploadRes.ok) {
+          const uploadError = await uploadRes.json();
+          throw new Error(uploadError.error || "Failed to upload image.");
+        }
+
+        const uploadResult = await uploadRes.json();
+        imageUrl = uploadResult.url;
+      }
+
       const method = editingNotice ? "PUT" : "POST";
       const url = editingNotice ? `/api/notices/${editingNotice.id}` : "/api/notices";
 
@@ -127,7 +164,7 @@ export default function Home() {
           category,
           priority,
           publishDate,
-          image: image.trim() || null,
+          image: imageUrl.trim() || null,
         }),
       });
 
@@ -468,7 +505,10 @@ export default function Home() {
                           />
                           <button
                             type="button"
-                            onClick={() => setImage("")}
+                            onClick={() => {
+                              setImage("");
+                              setSelectedImageFile(null);
+                            }}
                             className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md transition-colors"
                           >
                             <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
